@@ -41,7 +41,7 @@
                     ;;
                
                p)
-          if [ $status -ne 0 ] # to check if the file readed
+          if [ $status -ne 0 ] # to  check if the file readed
 
                then    
                echo 
