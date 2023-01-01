@@ -1,5 +1,6 @@
 
 status=0
+dataSaved=0
 tempFile=datasetTEMP.txt
 
 while true 
@@ -21,8 +22,8 @@ do
     case "$choice" in 
         r) 
 	    
-            read -p "Please input the name of the dataset file :  "  fileName # read the file name from user
-			fileName=$fileName.txt
+            read -p "Please input the name of the dataset file (do not include .txt) :  "  fileName # read the file name from user
+	    fileName=$fileName.txt
             
             
             if [ -e $fileName ] # checks  if file exists
@@ -33,26 +34,28 @@ do
 
 		if [ $fs1 -eq $fs2 ] # to check if the file is clean or not
 		then
-		    echo "file is clean"
+        echo
+		    echo "file is read successfully :)"
+            echo
 		    cp $fileName $tempFile # making temporary dataset file to work on
 		    status=1
 		else
 		    echo "file is not clean"
 		fi
-	
+		
             else
 
-			echo
-			echo
+		echo
+		echo
 
-			echo "file does not exist :( "
+		echo "file does not exist :( "
 
-			echo
-			echo
+		echo
+		echo
             fi
     	    echo Back to main menu ...
-			echo
-			echo
+	    echo
+	    echo
 	    sleep 2
             ;;
         
@@ -66,9 +69,9 @@ do
 		awk -F ";" '{$1=""; print $0}' $tempFile # print the data in the file
 		echo
 		echo "-------------------------------- DONE ---------------------------------"
-		#awk -F ";" '{ for (i=1; i<=NF; i++) print $i }' $fileName.txt
+		echo
             else
-		echo Please read the file first
+		echo "Please read the file first"
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
@@ -81,47 +84,49 @@ do
             
 	    if [ $status -ne 0 ] # to check if the file readed
 	    then   
-		# in awk -v --> letting me to use variables in awk cuz of  ' $var'
 		
 		
 
-		read -p "  Please input the name of the categorical feature for label encoding :  "  feature # read the feature name from user
-		fieldNum=$( awk -v b="$feature" -F ";" 'NR==1 {for(i=1;i<=NF;i++){if($i ~ b ){print i}}}'  $fileName) #saves field num 
+		read -p "  Please input the name of the categorical feature for label encoding :  "  feature 
+		# read the feature name from user - p to read from same line 
+		fieldNum=$( awk -v b="$feature" -F ";" 'NR==1 {for(i=1;i<=NF;i++){if($i ~ b ){print i}}}'  $tempFile) #saves field num 
+		# in awk -v --> letting me to use variables in awk cuz of  '$var'
 		
 		if [ -z "$fieldNum" ] # to check if we found the feature or not
 		then # the feature doesn't exists
-                    
+
+                    echo
                     echo "The name of categorical feature is wrong :("  
+                    echo
+                    sleep 2
+                    echo Back to main menu ...
+		else # found it maybe 
                     
 		    
+                    featureName=$(awk -v f=$fieldNum -F ";" ' NR==1 {print $f}'  $tempFile ) # saves feature name from dataset 
                     
-		else # found it maybe 
-                    # echo "Maybe we found it let me check :) "
-                    # sleep 1
-                    featureName=$(awk -v f=$fieldNum -F ";" ' NR==1 {print $f}'  $fileName ) # saves feature name from dataset 
-                    
-                    # echo " feature name -----> $featureName"
-
 
                     if [ "$feature" == "$featureName" ] # to check if the field have same feature name
 
                     then    # its the same
 
 			# echo "they are the sammme :)"
-			(awk -v f=$fieldNum -F ";" ' NR>1 {print $f}'  $fileName > featureValuesTemp.txt ) 
-			# getting all feature inputs and add them to temp file ^^^
+            
+			(awk -v f=$fieldNum -F ";" ' NR>1 {print $f}'  $tempFile > featureValuesTemp.txt ) 
+			#NR>1 --> to skip the first line cuz it contains the feature name
+			# getting all feature inputs and add them to temp file to work on with 
 
 			numOfEncodedStrings=$(wc -l featureValuesTemp.txt | awk -F " " '{ print $1 }')
 			# getting num of lines from  featureValuesTemp.txt file ^^^
 			
-                        for ((i=0; i <= $numOfEncodedStrings ; i++)) ## loop in temp file to check every data and add it to unique file 
+                        for ((i=0; i <= $numOfEncodedStrings ; i++)) 
+                        # loop in temp file to check every feature input and add it to unique file  if not added yet
                         do 
                             featureTemp=$(awk -v I=$i -F " " 'NR == I { print $1 }' featureValuesTemp.txt) # first column data saves
-                            
-                            touch featureValues.txt
+                            # -F necessary
+                            touch featureValues.txt    # to create the unique file of feature inputs 
                             lineNum=$( grep -n -w  "$featureTemp" featureValues.txt | awk -F ":" '{print $1}') #saves line num 
 
-                            # echo  "f name  $featureTemp on line -> $lineNum" 
                             
                             if [ -z "$lineNum" ] # to check if we found the feature Value or not from unique file
                                
@@ -133,9 +138,10 @@ do
                             else 
 				
 
-				featureName=$(awk -v f=$lineNum -F " " ' NR==f {print $1}'  featureValues.txt) # gets data from fefeatureValues.txt (that conatins feature inputs)
+				featureName=$(awk -v f=$lineNum -F " " ' NR==f {print $1}'  featureValues.txt)
+                 # gets data from featureValues.txt (that conatins feature inputs)
 
-				# echo " - > feature name $featureName"
+				
 				
 				
                             fi
@@ -143,10 +149,10 @@ do
                             
                         done
 
-                        cp $fileName $tempFile # making temporary dataset file to work on
+                      
 
                         echo -------------------------------
-                        for ((i=2; i <= $numOfEncodedStrings ; i++))
+                        for ((i=2; i <= $numOfEncodedStrings ; i++)) # loop to print the feature inputs and their values
                         do
                             tmp=$(awk -v I=$i ' NR==I {print $1 }' featureValues.txt )
                             
@@ -154,7 +160,7 @@ do
                             then 
 				break
                             else
-				echo "feature $tmp  Value is : $i"
+				echo "feature $tmp Value is : $i"
 
                             fi 
 
@@ -164,35 +170,30 @@ do
                         echo -------------------------------
 
 
-                        numOfEncodedStrings=$(wc -l $fileName | awk -F " " '{print $1}')
-                        numOfEncodedStrings+=1 # to replace the last line
-                        nf=$fieldNum ## must get it //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        
+                        numOfEncodedStrings=$(wc -l $tempFile | awk -F " " '{print $1}')
+                        numOfEncodedStrings+=1 # to replace the last line                        
                         touch temp.txt
 
-                        awk  -F " " ' NR == 1 {print $1 }' $fileName > temp.txt  # to add the header to the temp file
+                        awk  -F " " ' NR == 1 {print $1 }' $tempFile > temp.txt  # to add the header to the temp file
                         for ((i=2; i <= $numOfEncodedStrings ; i++))
                         do
-                            tmp=$(awk -v I=$i -v field=$nf -F ";" ' NR==I {print $field }' $fileName ) # gets data from the specific column and row
+                            tmp=$(awk -v I=$i -v field=$fieldNum -F ";" ' NR==I {print $field }' $tempFile ) 
+                            # gets data from the specific column and row
                             if [ -z "$tmp" ] 
                             then 
 				break
                             else
 				value=$(grep -n -w "$tmp" featureValues.txt | awk -F ":" '{print $1}') # get its value from the unique file
 				
-				awk  -v col="$nf" -v val="$value" -v lNum="$i" -F ";" ' NR == lNum {$col=val; print}' $tempFile >> temp.txt 
-				# change specific column inspecific line and print it in temp file
+				awk  -v col="$fieldNum" -v val="$value" -v lNum="$i" -F ";" ' NR == lNum {$col=val; print}' $tempFile >> temp.txt 
+				# change specific column in specific line and print it in temp file
 				sed -i '' 's/ /;/g' temp.txt # to get back the semicolun
-
-
-				#    sed -i '' ''"$i"'s/'"$tmp;"'/'"$value;"'/' datasetTEMP.txt # the '' cause im using mac why ? OS X requires the extension to be explicitly specified.
-
 
                             fi 
                             
                         done
 
-                        ## removes unneded files
+                        # remove unneded files
                         rm featureValuesTemp.txt
                         rm featureValues.txt
                         cp temp.txt $tempFile
@@ -200,27 +201,17 @@ do
 
 			
 
-			#fieldNum
-
-			
-			# ECHO THE DATA OF FEATUREVALUE AND EACH LINE NUM 
-			#GREP OR AWK | AWK | TO GET THE F1 == LINE NUM 
-			#SED
-			
-			
-			
-			
-
-			
-
                     else
-			# echo "they are not the sammme :)"
+			echo
+			echo "Something wrong in data feature name :("
+			echo
 			echo "BACK TO MAIN MENU . . . ."
+			
 			sleep 1 
                     fi
 		fi
 	    else
-		echo Please read the file first
+		echo "Please read the file first"
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
@@ -229,61 +220,36 @@ do
 	    fi
 
             ;;
-        o) 
+        o)
 
-            #TO DO  THIS FOR ONE HOT
-            #1 - READ FROM FILE DATASET 
-            #2 - REGEX ? AND IF THERE 1 ELSE 0  
-            #CONCNATE THE STRING AND SAVE
-
-
-
-            #  for ((i=2; i <= $numOfEncodedStrings ; i++)) ## loop in temp file to check every data and make label string for header
-            # do 
-            #     featureTemp="$(awk -v I=$i -F " " 'NR == I { print $1 }' featureValues.txt)" # first column data saves
-            
-            #     if [ -z $featureTemp ] 
-            #     then 
-            #         echo empty
-            
-            #     else
-            #         featureTemp+=';'
-            #         string+=$featureTemp
-            
-            #     fi
-            #done
-            #    sed -i '' 's/'"$feature;"'/'"$string"'/' datasetTEMP.txt # the '' cause im using mac -> WHY? -> OS X requires the extension to be explicitly specified
-            if [ $status -ne 0 ]
-	       #TO DO  THIS FOR ONE HOT
-	       #1 - READ FROM FILE DATASET 
-	       #2 - REGEX ? AND IF THERE 1 ELSE 0  
-	       #CONCNATE THE STRING AND SAVE
+            if [ $status -ne 0 ] # to check if the file is read or not
+               
+	       
 
 	    then  
 
 		read -p "  Please input the name of the categorical feature for label encoding :  "  feature # read the feature name from user
-		fieldNum=$( awk -v b="$feature" -F ";" ' NR==1 {for(i=1;i<=NF;i++){if($i ~ b){print i}}}'  $fileName ) #saves field num 
+		fieldNum=$( awk -v b="$feature" -F ";" ' NR==1 {for(i=1;i<=NF;i++){if($i ~ b){print i}}}'  $tempFile ) #saves field num 
 		
 		if [ -z "$fieldNum" ] # to check if we found the feature or not
 		then # the feature doesn't exists
 		    
+		    echo
 		    echo "The name of categorical feature is wrong :("  
-		    
-		    
-		    
-		else # found it maybe 
-		    # echo "Maybe we found it let me check :) "
-		    # sleep 1
-		    featureName=$(awk -v f=$fieldNum -F ";" ' NR==1 {print $f}'  $fileName ) # saves feature name from dataset 
-		    
-		    
+		    echo
+		    echo "BACK TO MAIN MENU . . . ."
+		    echo
+		    sleep 1
 
+		else 
+
+		    featureName=$(awk -v f=$fieldNum -F ";" ' NR==1 {print $f}'  $tempFile ) # saves feature name from dataset 
+		    
 		    if [ "$feature" == "$featureName" ] # to check if the field have same feature name
 
 		    then    # its the same
 
-			# echo "they are the sammme :)"
-			(awk -v f=$fieldNum -F ";" ' NR>1 {print $f}'  $fileName > featureValuesTemp.txt ) 
+			(awk -v f=$fieldNum -F ";" ' NR>1 {print $f}'  $tempFile > featureValuesTemp.txt ) 
 			# getting all feature inputs and add them to temp file ^^^
 
 			numOfEncodedStrings=$(wc -l featureValuesTemp.txt | awk -F " " '{ print $1 }')
@@ -298,21 +264,22 @@ do
 			    
 			    lineNum=$( grep -n -w  "$featureTemp" featureValues.txt | awk -F ":" '{print $1}') #saves line num 
 
-			    # echo  "f name  $featureTemp on line -> $lineNum" 
+			    
 			    
 			    if [ -z "$lineNum" ] # to check if we found the feature Value or not from unique file
 			       
 			    then # when we cannot find the line num of it then the data is  not added !! 
-				# echo "The name of feature is not added yet :("   
+				
 				echo $featureTemp >> featureValues.txt #    then we will add it 
 				lineNum=$( grep -n -w  "$featureTemp" featureValues.txt | awk -F ":" '{print $1}') #saves field num 
 				
 			    else 
 				
+				featureName=$(awk -v f=$lineNum -F " " ' NR==f {print $1}'  featureValues.txt) # gets data from featureValues.txt (that conatins feature inputs) 
+				
+				
+				# check this ^^^
 
-				featureName=$(awk -v f=$lineNum -F " " ' NR==f {print $1}'  featureValues.txt) # gets data from fefeatureValues.txt (that conatins feature inputs)
-
-				# echo " - > feature name $featureName"
 				
 				
 			    fi
@@ -320,14 +287,14 @@ do
 			    
 			done
 
-			cp $fileName $tempFile # making temporary dataset file to work on
+			# cp $fileName $tempFile # making temporary dataset file to work on
 
 			numOflinesInFeatureValues=$(wc -l featureValues.txt | awk -F " " '{print $1}') # gets num of lines in featureValues.txt
-			newString=""
+			newString="" 
 			
 			for ((i=2; i <= $numOflinesInFeatureValues ; i++)) # started from i = 2 cause data starts from line 2
 			do
-			    tmp=$(awk -v I=$i ' NR==I {print $1 }' featureValues.txt )
+			    tmp=$(awk -v I=$i ' NR==I {print $1 }' featureValues.txt ) # get feature input from featureValues.txt (the unique file)
 			    
 			    
 			    
@@ -335,25 +302,27 @@ do
 			    then 
 				break
 			    else
-				newString+="$tmp;"
+				newString+="$tmp:" # add the feature input to newString
+                
 
 			    fi 
 
 
 			done
-			
-			echo ---------------------
+                    echo
+                    echo "--- $newString -- new string      -"
+                    echo "313"
+                    awk -F ";" -v F=$fieldNum  -v V=$newString 'NR==1 {$F=V;print }' $tempFile > temp2.txt # change the value of feature in line i to the new value  #new
 
-			echo   $newString
+                    sed -i '' '1s/:/ /g' temp2.txt # to remove  the semicolun  #new
 
-			echo ---------------------
+                    # # awk 'NR==1 {print $0}' $tempFile > temp2.txt # to get the first line of dataset  #new
+                    # sed -i '' '1s/ /:/g' $tempFile # to replace the space with :  #new
 
-			
-
-			sed -i '' '1s/'"$feature;"'/'"$newString"'/' $tempFile # the '' cause im using mac why ? OS X requires the extension to be explicitly specified.
+			# sed -i '' '1s/'"$feature;"'/'"$newString"'/' $tempFile # the '' cause im using mac why ? OS X requires the extension to be explicitly specified.
 			# the $i refers to line number and the $tmp refers to the data that we want to replace it with $value
 
-			numOflinesInDataset=$(wc -l $fileName | awk -F " " '{print $1}') # gets num of lines in dataset
+			numOflinesInDataset=$(wc -l $tempFile | awk -F " " '{print $1}') # gets num of lines in dataset
 
 			numOflinesInDataset_plusOne=$numOflinesInDataset
 			
@@ -362,7 +331,6 @@ do
 
 
 			
-			
 			for ((i=2; i <= $numOflinesInDataset_plusOne ; i++)) # started from i = 2 cause data starts from line 2 (line 1 is header)
 			do
 			    newString=""
@@ -370,40 +338,67 @@ do
 			    for ((j=2; j <= $numOflinesInFeatureValues ; j++)) # started from i = 2 cause data starts from line 2
 			    do
 				tmp=$(awk -v I=$j ' NR==I {print $1 }' featureValues.txt )
-				value=$(awk -F ";" -v I=$i -v F=$fieldNum ' NR==I {print $F }' $fileName )
+				value=$(awk -F ";" -v I=$i -v F=$fieldNum ' NR==I {print $F }' $tempFile )
 				
 				if [ "$tmp" == "$value" ] # to check if the data is the same as the feature value
 				then
-				    newString+="1;"
-				    tmp2=$tmp
+				    newString+="1:" # if it is the same then we will add 1 to the new string #new
+				    tmp2=$tmp    
 				else
-				    newString+="0;"
+				    newString+="0:" # if it is not the same then we will add 0 to the new string #new
 
 				fi
 			    done
-			    sed -i '' ''"$i"'s/'"$tmp2;"'/'"$newString"'/' $tempFile
+
+                echo " $newString -- new string  346    -" # new
+			    #sed -i '' ''"$i"'s/'"$tmp2;"'/'"$newString"'/' $tempFile   # replace the feature name  with its  inputs
+                awk -F ";" -v F=$fieldNum -v L=$i -v V=$newString 'NR==L {$F=V;print }' $tempFile >> temp2.txt # change the value of feature in line i to the new value  #new
+                # change the value of feature in line i to the new value .'1' to tell awk to print the modified val
+                echo
+                cat temp2.txt  # new
+                
+                echo
+
+
+			    # the '' cause im using mac why ? OS X requires the extension to be explicitly specified.
+                # awk -F ";" -v I=$i -v F=$fieldNum -v nst=$newString' NR==I {$F=nst; print $F }' $tempFile >> aaa1.txt # add the feature name to the temp file to get all feature inputs
 			    
 
 
 			done
-			
+            sed -i '' 's/:/ /g' temp2.txt # to remove the last char which is ':'  #new
+            sed -i '' 's/  / /g' temp2.txt # to remove the last char which is ':'  #new
+            sed -i '' 's/ /;/g' temp2.txt # to remove the last char which is ':'  #new
 
-			cat featureValues.txt
+            cp temp2.txt $tempFile # to copy the new file to the temp file  #new
+            
+			
 
 			rm featureValuesTemp.txt
 			rm featureValues.txt
 
+			echo    
+			echo "DONE !"
+			echo
+			sleep 1
+			
 			
 
 		    else
-			# echo "they are not the sammme :)"
+
+            echo "Action canceled"
+			echo " Something wrong with feature name :)"
 			echo "BACK TO MAIN MENU . . . ."
+            echo
 			sleep 1 
 		    fi
 		fi
 
+
 	    else
+        echo
 		echo Please read the file first
+        echo
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
@@ -417,15 +412,12 @@ do
 
 	    then  
 
-
-		cp $fileName $tempFile # making temporary dataset file to work on
-		
-		
-		
+		# cp $fileName $tempFile # making temporary dataset file to work on
 
 
 		read -p " Please input the name of the feature to be scaled :  "  feature # read the feature name from user
-		fieldNum=$( awk -v b="$feature" -F ";" 'NR==1 {for(i=1;i<=NF;i++){if($i ~ b ){print i}}}'  $tempFile ) #saves field num, if the feature name is not found it will be empty
+		fieldNum=$( awk -v b="$feature" -F ";" 'NR==1 {for(i=1;i<=NF;i++){if($i ~ b ){print i}}}'  $tempFile )
+         #saves field num, if the feature name is not found it will be empty
 		if [ -z "$fieldNum" ] # to check if we found the feature or not
 		then # the feature doesn't exists
 		    
@@ -440,9 +432,7 @@ do
 		    echo "------funm---$fieldNum"
 		    
 		    if [[ $value =~ ^[0-9]+$ ]]; then # '^' first character, '$' last character, '+' one or more times
-			echo "Value is an integer"
-
-			
+			# echo "Value is an integer"
 			
 			awk  -v col="$fieldNum"  -F ";" 'NR>=2 {print $col }' $tempFile >> temp.txt  
 			sort -n temp.txt > temp2.txt # sort the data in temp file and add it to temp2 file
@@ -515,18 +505,58 @@ do
         s) 
             if [ $status -ne 0 ] # to check if the file readed
 
-            then    
-                echo p 
+            then   
+                            
+                            read -p " Please input the name of the file to save the processed dataset (do not include .txt) :  "  newFile # read the feature name from user
+                            newFile=$newFile.txt
+                            cp $tempFile $newFile # copy the temp file to the new file
+                            echo
+                            echo "The processed dataset saved in $newFile"
+                            dataSaved=1  # to check if the data saved or not
+                            sleep 1
+                            echo Back to main menu ...
+                            sleep 1
+                            
+
+
+                 
             else
-		echo Please read the file first
+		echo "There is no changes to save" 
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
-		clear 
 
             fi
             ;;
         e) 
+        if [ $dataSaved -eq 0 ] # to check if the file saved
+        then
+
+        read -p " The processed dataset is not saved. Are you sure you want to exist? "  answer 
+        if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
+        then
+            echo Exiting ... 
+            sleep 1
+            exit 1
+        else
+            echo Back to main menu ... 
+            sleep 1
+        fi
+
+        else
+         read -p " Are you sure you want to exist? "  answer
+            if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
+            then
+                echo Exiting ... 
+                sleep 1
+                exit 1
+            else
+                echo Back to main menu ... 
+                sleep 1
+            fi
+
+
+        fi
             echo Exiting ... 
             sleep 1
             exit 1
