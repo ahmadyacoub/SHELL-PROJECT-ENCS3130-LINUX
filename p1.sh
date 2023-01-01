@@ -38,6 +38,10 @@ do
 		    clear   
 		    echo "file is read successfully :)"
 		    echo
+            echo "------------------------------ FILE Features ------------------------------"
+            fs=$(awk -F ";" 'NR==1{print $0}' $fileName | sed 's/;/ /g')
+            echo $fs
+            echo "-------------------------------- DONE ---------------------------------"
 		    cp $fileName $tempFile # making temporary dataset file to work on
 		    status=1
 		else
@@ -77,7 +81,7 @@ do
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
-		clear 
+		
 
             fi
             ;;
@@ -301,7 +305,7 @@ do
 			    then 
 				break
 			    else
-				newString+="$tmp:" # add the feature input to newString
+				newString+="$feature-$tmp:" # add the feature input to newString
 				
 
 			    fi 
@@ -409,8 +413,7 @@ do
 		else # found it maybe
 		    
 		    value=$(awk -F ";"  -v F=$fieldNum ' NR==2 {print $F }' $tempFile ) # gets the value of feature data to check if it is an integer or not
-		    ## here must change to datasetTemp.txt
-		    echo "------funm---$fieldNum"
+		   
 		    
 		    if [[ $value =~ ^[0-9]+$ ]]; then # '^' first character, '$' last character, '+' one or more times
 			# echo "Value is an integer"
@@ -501,15 +504,18 @@ do
                 echo
                 echo "The processed dataset saved in $newFile"
                 dataSaved=1  # to check if the data saved or not
+                echo
                 sleep 1
                 echo Back to main menu ...
+                echo
+                echo
                 sleep 1
                 
 
 
                 
             else
-		echo "There is no changes to save ( No File Readed )" 
+		echo "There is no date to be saved ( No File Readed )" 
 		sleep 1
 		echo Back to main menu ... 
 		sleep 1
@@ -519,39 +525,47 @@ do
         e) 
             if [ $dataSaved -eq 0 ] # to check if the file saved
             then
+            
 
-		read -p " The processed dataset is not saved. Are you sure you want to exist? "  answer 
+		read -p " The processed dataset is not saved. Are you sure you want to exit? "  answer 
+        
 		if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
 		then
+            echo
 		    echo Exiting ... 
 		    
 		    sleep 1
 		    exit 1
 		else
+            echo
 		    echo Back to main menu ... 
 		    sleep 1
 		fi
 
             else
-		read -p " Are you sure you want to exist? "  answer
+            echo
+            echo "The processed dataset is saved"
+            echo
+		read -p " Are you sure you want to exit? "  answer
 		if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
-		then
+		then    
+                    echo
                     echo Exiting ... 
                     sleep 1
                     exit 1
 		else
+                    echo
                     echo Back to main menu ... 
                     sleep 1
 		fi
 
 
             fi
-            echo Exiting ... 
-            sleep 1
-            exit 1
+          
             ;;
         *)
             clear 
+            
             echo " thats not an option"
             sleep 2
             ;;
@@ -559,3 +573,5 @@ do
     esac
     
 done
+
+# after checked when just press enter that may cause error
