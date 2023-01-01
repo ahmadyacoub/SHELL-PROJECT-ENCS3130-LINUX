@@ -412,7 +412,6 @@ do
 
 	    then  
 
-		# cp $fileName $tempFile # making temporary dataset file to work on
 
 
 		read -p " Please input the name of the feature to be scaled :  "  feature # read the feature name from user
@@ -443,13 +442,16 @@ do
 			min=$(head -n 1 temp2.txt) # get the min value
 			max=$(tail -n 1 temp2.txt) # get the max value
 
-			rm temp2.txt # remove temp2 file Useless
+			
 
 			echo "min is $min" 
+            cat temp2.txt
 			echo "max is $max"
+            rm temp2.txt # remove temp2 file Useless
+        
 
 			
-			numlines=$(wc -l $fileName | awk -F " " '{ print $1 }') # get the number of lines in dataset
+			numlines=$(wc -l $tempFile | awk -F " " '{ print $1 }') # get the number of lines in dataset
 			touch temp.txt # create temp file
 
 			awk 'NR==1 {print }' $tempFile > temp.txt # add the first line to temp file
@@ -459,8 +461,10 @@ do
 			    fieldVal=$(awk -F ";"  -v F=$fieldNum -v L=$i ' NR==L {print $F }' $tempFile ) # get the value of feature in line i
 			    
 
-			    a=$(expr $fieldVal - $min) # get the value - min
-			    b=$(expr $max - $min) # get the max - min
+			   
+                a=$(echo "$fieldVal - $min" | bc) # get the value - min
+                b=$(echo "$max - $min" | bc) # get the max - min
+			  
 			    newVal=$(echo "scale=3; $a / $b" | bc) # scale=3 means 3 decimal places after the decimal point 
 			    #bc is the command to calculate
 			    newVal=$(printf "%.2f\n" $newVal) # print the result with 2 decimal places
