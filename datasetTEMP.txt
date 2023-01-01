@@ -1,5 +1,5 @@
 id;age;gender;height;weight;active;smoke;governorate;
-1;0.39;male;170;4;no;yes;ramallah;
-1;0.17;female;160;65;no;no;ramallah;
-3;0.00;male;165;72;yes;yes;nablus;
-4;1.00;male;41;20;no;no;jerusalem;
+1;30;male;170;4;no;yes;ramallah;
+1;25;female;160;65;no;no;ramallah;
+3;21;male;165;72;yes;yes;nablus;
+4;44;male;41;20;no;no;jerusalem;
