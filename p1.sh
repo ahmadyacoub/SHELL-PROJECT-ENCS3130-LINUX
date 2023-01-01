@@ -38,10 +38,10 @@ do
 		    clear   
 		    echo "file is read successfully :)"
 		    echo
-            echo "------------------------------ FILE Features ------------------------------"
-            fs=$(awk -F ";" 'NR==1{print $0}' $fileName | sed 's/;/ /g')
-            echo $fs
-            echo "-------------------------------- DONE ---------------------------------"
+		    echo "------------------------------ FILE Features ------------------------------"
+		    fs=$(awk -F ";" 'NR==1{print $0}' $fileName | sed 's/;/ /g')
+		    echo $fs
+		    echo "-------------------------------- DONE ---------------------------------"
 		    cp $fileName $tempFile # making temporary dataset file to work on
 		    status=1
 		else
@@ -134,8 +134,8 @@ do
                             if [ -z "$lineNum" ] # to check if we found the feature Value or not from unique file
                                
                             then # when we cannot find the line num of it then the data is  not added !! 
-            			    	echo $featureTemp >> featureValues.txt #    then we will add it 
-			            	    lineNum=$( grep -n -w  "$featureTemp" featureValues.txt | awk -F ":" '{print $1}') #saves field num 
+            			echo $featureTemp >> featureValues.txt #    then we will add it 
+			        lineNum=$( grep -n -w  "$featureTemp" featureValues.txt | awk -F ":" '{print $1}') #saves field num 
 				
                             else 
 				
@@ -144,7 +144,7 @@ do
 				# gets data from featureValues.txt (that conatins feature inputs)
 
 				
-    
+				
 				
                             fi
 
@@ -156,7 +156,7 @@ do
                         
                         echo
                         echo --------------------------------- LABEL ENCODING ---------------------------------
-                                            
+                        
                         for ((i=2; i <= $numOfEncodedStrings ; i++)) # loop to print the feature inputs and their values
 
                         do
@@ -164,16 +164,16 @@ do
                             
                             if [ -z "$tmp" ] # to check if we found the feature Value or not from unique file
                             then  # when we cannot find the line num of it then the data is  not added !!
-			                	break
+			        break
                             else  
-				                echo "feature $tmp Value is : $i"
+				echo "feature $tmp Value is : $i"
 
                             fi 
 
 
                         done
                         
-                       echo "--------------------------------- feature Inputs ^^^ ---------------------------------"
+			echo "--------------------------------- feature Inputs ^^^ ---------------------------------"
 
 
                         numOfEncodedStrings=$(wc -l $tempFile | awk -F " " '{print $1}')
@@ -187,13 +187,13 @@ do
                             # gets data from the specific column and row
                             if [ -z "$tmp" ] 
                             then 
-				                break
+				break
                             else
-				                value=$(grep -n -w "$tmp" featureValues.txt | awk -F ":" '{print $1}') # get its value from the unique file
+				value=$(grep -n -w "$tmp" featureValues.txt | awk -F ":" '{print $1}') # get its value from the unique file
 				
-				                awk  -v col="$fieldNum" -v val="$value" -v lNum="$i" -F ";" ' NR == lNum {$col=val; print}' $tempFile >> temp.txt 
-			                	# change specific column in specific line and print it in temp file
-			                	sed -i '' 's/ /;/g' temp.txt # to get back the semicolun
+				awk  -v col="$fieldNum" -v val="$value" -v lNum="$i" -F ";" ' NR == lNum {$col=val; print}' $tempFile >> temp.txt 
+			        # change specific column in specific line and print it in temp file
+			        sed -i '' 's/ /;/g' temp.txt # to get back the semicolun
 
                             fi 
                             
@@ -219,7 +219,7 @@ do
                     fi
 		fi
 	    else
-        echo
+		echo
 		echo "Please read the file first"
 		echo
 		echo Back to main menu ... 
@@ -300,7 +300,7 @@ do
 			do
 			    tmp=$(awk -v I=$i ' NR==I {print $1 }' featureValues.txt ) # get feature input from featureValues.txt (the unique file)
 			    
-						    
+			    
 			    if [ -z "$tmp" ] # cause i used num of Encoded strings that have much data than featureValues.txt
 			    then 
 				break
@@ -413,7 +413,7 @@ do
 		else # found it maybe
 		    
 		    value=$(awk -F ";"  -v F=$fieldNum ' NR==2 {print $F }' $tempFile ) # gets the value of feature data to check if it is an integer or not
-		   
+		    
 		    
 		    if [[ $value =~ ^[0-9]+$ ]]; then # '^' first character, '$' last character, '+' one or more times
 			# echo "Value is an integer"
@@ -428,7 +428,7 @@ do
 			max=$(tail -n 1 temp2.txt) # get the max value
 
 			
-            echo
+			echo
 			echo "min is $min" 
 			
 			echo "max is $max"
@@ -525,27 +525,27 @@ do
         e) 
             if [ $dataSaved -eq 0 ] # to check if the file saved
             then
-            
+		
 
 		read -p " The processed dataset is not saved. Are you sure you want to exit? "  answer 
-        
+		
 		if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
 		then
-            echo
+		    echo
 		    echo Exiting ... 
 		    
 		    sleep 1
 		    exit 1
 		else
-            echo
+		    echo
 		    echo Back to main menu ... 
 		    sleep 1
 		fi
 
             else
-            echo
-            echo "The processed dataset is saved"
-            echo
+		echo
+		echo "The processed dataset is saved"
+		echo
 		read -p " Are you sure you want to exit? "  answer
 		if [ $answer == "yes" ] || [ $answer == "y" ] || [ $answer == "Y" ] || [ $answer == "YES" ] || [ $answer == "Yes" ]
 		then    
@@ -561,7 +561,7 @@ do
 
 
             fi
-          
+            
             ;;
         *)
             clear 
